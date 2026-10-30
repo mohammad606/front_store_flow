@@ -13,7 +13,13 @@ void main() {
   testWidgets('StoreFlow app loads', (WidgetTester tester) async {
     await tester.pumpWidget(const StoreFlowApp());
 
-    expect(find.text('StoreFlow Login Demo'), findsOneWidget);
+    expect(find.text('StoreFlow'), findsOneWidget);
     expect(find.text('تسجيل الدخول'), findsOneWidget);
+  });
+
+  test('user role is detected correctly', () {
+    expect(isUserRole('user'), isTrue);
+    expect(isUserRole('User'), isTrue);
+    expect(isUserRole('admin'), isFalse);
   });
 }
