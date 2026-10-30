@@ -12,6 +12,10 @@ import 'package:storeflow/features/user/screens/user_home_page.dart';
 const Color _primaryBlue = Color(0xFF2563EB);
 const Color _secondaryGray = Color(0xFF64748B);
 
+bool hasStoredToken(String? token) {
+  return token != null && token.trim().isNotEmpty;
+}
+
 bool isUserRole(String? role) {
   return role?.trim().toLowerCase() == 'user';
 }
@@ -33,8 +37,59 @@ class StoreFlowApp extends StatelessWidget {
         scaffoldBackgroundColor: Colors.white,
         colorScheme: ColorScheme.fromSeed(seedColor: _primaryBlue),
       ),
-      home: const AuthPage(),
+      home: const AuthGate(),
     );
+  }
+}
+
+class AuthGate extends StatefulWidget {
+  const AuthGate({super.key});
+
+  @override
+  State<AuthGate> createState() => _AuthGateState();
+}
+
+class _AuthGateState extends State<AuthGate> {
+  bool _isChecking = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkSession();
+  }
+
+  Future<void> _checkSession() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token') ?? '';
+    final role = prefs.getString('user_role') ?? '';
+
+    if (!mounted) return;
+
+    if (hasStoredToken(token) && (role.isEmpty || isUserRole(role))) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const UserHomePage()),
+      );
+      return;
+    }
+
+    setState(() {
+      _isChecking = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isChecking) {
+      return const Scaffold(
+        backgroundColor: Colors.white,
+        body: Center(
+          child: CircularProgressIndicator(color: _primaryBlue),
+        ),
+      );
+    }
+
+    return const AuthPage();
   }
 }
 
